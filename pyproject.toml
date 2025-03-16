@@ -11,13 +11,5 @@ dependencies = [
 ]
 
 [project.scripts]
-wf-tree = "tree:main"
-wf-main = "table:main"
-
-[dependency-groups]
-dev = [
-    "wf-vis",
-]
-
-[tool.uv.sources]
-wf-vis = { workspace = true }
+wf-tree = "viz.tree:main"
+wf-table = "viz.table:main"

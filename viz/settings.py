@@ -5,7 +5,7 @@ import json
 import pathlib
 import pickle
 
-import steps
+import viz.steps as steps
 
 
 STATUS2COLOUR = {

@@ -4,8 +4,8 @@ import click
 import rich.console
 import rich.table
 
-import settings
-import steps
+import viz.settings as settings
+import viz.steps as steps
 
 
 COLUMNS = [
