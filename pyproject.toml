@@ -1,0 +1,23 @@
+[project]
+name = "wf-vis"
+version = "0.1.0"
+description = "Visualisation for workflow tools"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.1.8",
+    "rich>=13.9.4",
+    "ruff>=0.11.0",
+]
+
+[project.scripts]
+wf-tree = "tree:main"
+wf-main = "table:main"
+
+[dependency-groups]
+dev = [
+    "wf-vis",
+]
+
+[tool.uv.sources]
+wf-vis = { workspace = true }
