@@ -94,7 +94,7 @@ class Step:
         """
         self.name = name
         self.status = status
-        self.path = pathlib.Path().resolve() / self.name
+        self.path = pathlib.Path().resolve() / self.name.replace(" ", "_").lower()
         self.uuid = uuid.uuid4()
         self.ctime = datetime.datetime.now()
         self.mtime = datetime.datetime.now()

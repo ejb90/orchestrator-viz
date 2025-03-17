@@ -1,4 +1,6 @@
-""" """
+""" 
+Test Tree view
+"""
 
 import pytest
 

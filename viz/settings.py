@@ -39,7 +39,6 @@ class Settings:
             "ctime",
             "mtime",
             # "scheduler",
-            
         ]
         self.colour = "standard"
 # === TO REPLACE WITH core.Settings instance ==============================================
