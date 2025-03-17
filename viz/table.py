@@ -2,9 +2,6 @@
 Table visualisation of workflow
 """
 
-import pathlib
-
-import click
 import rich.console
 import rich.table
 
@@ -23,8 +20,11 @@ COLUMN2COLUMNTITLE = {
 
 
 class Table:
-    """ 
+    """
     Show the Workflow in Table view
+
+    Attrs:
+        wf (workflow.Workflow):         workflow.Workflow instance
     """
 
     def __init__(self, wf, columns=None, options=settings.Settings()):
@@ -33,34 +33,43 @@ class Table:
 
         Args:
             wf (workflow.Workflow):         workflow.Workflow instance
-            columns (list):                 List of column names to print 
-        """
-        self.wf = wf
-        self.columns = columns if columns is not None else options.columns
-        self.settings = options
-        
-        self.initialise_table()
-        self.build_table(self.wf.steps)
-        self.print()
-    
-    def initialise_table(self):
-        """
-        Initialse rich.Table object
-        """
-        self.table = rich.table.Table(title=self.wf.name)
-        for column in self.columns:
-            self.table.add_column(COLUMN2COLUMNTITLE[column])
+            columns (list):                 List of column names to print
+            options (settings.Settings)     Visualisation options
 
-    def print(self):
-        """ 
-        Print the table
-        
-        Args:
-        
         Returns:
             None
         """
-        console = rich.console.Console(color_system=self.settings.colour)
+        self.wf = wf
+        self._columns = columns if columns is not None else options.columns
+        self._settings = options
+
+        self.initialise_table()
+        self.build_table(self.wf.steps)
+        self.print()
+
+    def initialise_table(self):
+        """
+        Initialse rich.Table object
+
+        Args:
+
+        Returns:
+            None
+        """
+        self.table = rich.table.Table(title=self.wf.name)
+        for column in self._columns:
+            self.table.add_column(COLUMN2COLUMNTITLE[column])
+
+    def print(self):
+        """
+        Print the table
+
+        Args:
+
+        Returns:
+            None
+        """
+        console = rich.console.Console(color_system=self._settings.colour)
         console.print(self.table)
 
     def build_table(self, stps):
@@ -70,15 +79,15 @@ class Table:
 
         Args:
             stps (list):        List of Step instances
-        
+
         Returns:
             None
         """
         for step in stps:
             rows = []
-            for column in self.columns:
+            for column in self._columns:
                 if column == "status":
-                    rows.append(f'[{settings.STATUS2COLOUR[step.status]}]{step.status}')
+                    rows.append(f"[{settings.STATUS2COLOUR[step.status]}]{step.status}")
                 elif column == "uuid":
                     rows.append(step.uuid.hex)
                 elif column in ("ctime", "mtime"):
@@ -92,9 +101,14 @@ class Table:
                 self.build_table(step.steps)
 
 
-
 def main():
-    """ """
+    """
+    Args:
+        argv (list):        List of arguments (for pytest compatability)
+
+    Returns:
+        None
+    """
     steps.make_tmp_workflow()
     args = settings.get_args()
     wf = settings.load_wf(args)

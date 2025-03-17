@@ -8,8 +8,6 @@ import pickle
 import random
 import uuid
 
-import viz.database as database
-
 
 STATUS = [
     "unstarted",
@@ -21,9 +19,27 @@ STATUS = [
 
 
 class Scheduler:
-    """ """
+    """
+    Scheduler object
+
+    Attrs:
+        type (str):         Scheduler type
+        partition (str):    Partition type
+        nodes (int):        Number of nodes
+        ppn (int):          Number of procs per node
+        procs (int):        Total number of procs
+        wallclock (int):    Wallclock [s]
+    """
+
     def __init__(self):
-        """ """
+        """
+        Initialise Scheduler
+
+        Args:
+
+        Returns:
+            None
+        """
         self.type = "slurm"
         self.partition = "parallel"
         self.nodes = 1
@@ -31,14 +47,32 @@ class Scheduler:
         self.procs = 1
         self.wallclock = 1
 
+
 class Job:
     """
     Holds data about a single (HPC) job
-    
+
     TODO - match up with real Scheduler object
+
+    Attrs:
+        type (str):         Scheduler type
+        partition (str):    Partition type
+        nodes (int):        Number of nodes
+        ppn (int):          Number of procs per node
+        procs (int):        Total number of procs
+        wallclock (int):    Wallclock [s]
+
     """
+
     def __init__(self):
-        """ """
+        """
+        Initialise job
+
+        Args:
+
+        Returns:
+            None
+        """
         self.scheduler = None
         self.job_id = None
 
@@ -52,10 +86,31 @@ class Job:
 
 
 class Step:
-    """ """
+    """
+    Step base instance
+
+    Attrs:
+        name (str):                 Step name
+        status (str):               Step status
+        steps (list):               List of steps
+        path (pathlib.Path):        Root path of Step
+        uuid (uuid.UUID):           UUID
+        ctime (datetime.datetime):  Creation time
+        mtime (datetime.datetime):  Modification time
+        scheduler (scheduler):      Scheduler object
+    """
 
     def __init__(self, name, status):
-        """ """
+        """
+        Initialise Step
+
+        Args:
+            name (str):         Step name
+            status (str):       Step status
+
+        Returns:
+            None
+        """
         self.name = name
         self.status = status
         self.path = pathlib.Path().resolve() / self.name
@@ -66,49 +121,109 @@ class Step:
 
 
 class Task(Step):
-    """ """
+    """
+    Task instance
+
+    Attrs:
+        name (str):                 Task name
+        status (str):               Task status
+        steps (list):               List of steps
+        path (pathlib.Path):        Root path of task
+        uuid (uuid.UUID):           UUID
+        ctime (datetime.datetime):  Creation time
+        mtime (datetime.datetime):  Modification time
+        scheduler (scheduler):      Scheduler object
+    """
 
     def __init__(self, name, status):
-        """ """
+        """
+        Initialise Task
+
+        Args:
+            name (str):         Task name
+            status (str):       Task status
+
+        Returns:
+            None
+        """
         super().__init__(name, status)
 
 
 class Workflow(Step):
-    """ """
+    """
+    Workflow instance
+
+    Attrs:
+        name (str):                 Workflow name
+        status (str):               Workflow status
+        steps (list):               List of steps
+        path (pathlib.Path):        Root path of workflow
+        uuid (uuid.UUID):           UUID
+        ctime (datetime.datetime):  Creation time
+        mtime (datetime.datetime):  Modification time
+        scheduler (scheduler):      Scheduler object
+    """
 
     def __init__(self, name, status="unstarted", steps=[]):
-        """ """
+        """
+        Initialise workflow
+
+        Args:
+            name (str):         Workflow name
+            status (str):       Workflow status
+            steps (list):       List of steps
+
+        Returns:
+            None
+        """
         super().__init__(name, status)
         self.steps = steps
 
     def fix_paths(self):
-        """ """
+        """
+        Fix paths relative to parent
+
+        Args:
+
+        Returns:
+            None
+        """
         for step in self.steps:
             step.path = self.path / step.name.replace(" ", "_").lower()
 
 
-#========================================================================================================================
+# ========================================================================================================================
 # Tmp to mimic baseline
-#========================================================================================================================
+# ========================================================================================================================
 def make_tmp_task(name, status):
     """
     Build a temp task
+
+    Args:
+        name (str):         Task name
+        status (str):       Task status
     """
     scheduler = Scheduler()
     scheduler.partition = "parallel" if name == "step 3" else "serial"
     scheduler.nodes = 4 if name == "step 3" else 1
     scheduler.ppn = 64 if name == "step 3" else 1
     scheduler.procs = scheduler.nodes * scheduler.ppn
-    
+
     task = Task(name, status)
     task.scheduler = scheduler
-    
+
     return task
 
 
 def make_tmp_workflow():
     """
     Make a temp tree to loop through
+
+    Args:
+        None
+
+    Returns:
+        wf (workflow.Workflow):         Temp workflow object
     """
     steps = [
         "step 1",
@@ -139,7 +254,13 @@ def make_tmp_workflow():
                 status = STATUS[roll]
             tasks.append(make_tmp_task(step, status))
         wf.steps.append(
-            Workflow(model, steps=tasks, status="completed" if all([t.status=="completed" for t in tasks]) else "failed")
+            Workflow(
+                model,
+                steps=tasks,
+                status="completed"
+                if all([t.status == "completed" for t in tasks])
+                else "failed",
+            )
         )
         wf.steps[-1].fix_paths()
     wf.fix_paths()

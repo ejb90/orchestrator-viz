@@ -1,9 +1,8 @@
-"""
-"""
+""" """
+
 import argparse
 import json
 import pathlib
-import pickle
 import uuid
 
 import viz.database as database
@@ -29,9 +28,9 @@ class Settings:
     Attrs:
         TODO
     """
+
     def __init__(self, fname="settings.yaml"):
-        """
-        """
+        """ """
         self.columns = [
             "name",
             "status",
@@ -39,8 +38,10 @@ class Settings:
             "uuid",
             "ctime",
             "mtime",
-            ]
+        ]
         self.colour = "standard"
+
+
 # === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings ===
 
 
@@ -55,46 +56,46 @@ def get_args(argv):
     4. Pickle + path (potentially non-unique!)
     5. JSON + UUID
     5. JSON + path (potentially non-unique!)
-    
+
     Args:
-    
+
     Returns:
         None
     """
-    parser = argparse.ArgumentParser(description='CLI options for visualisation')
+    parser = argparse.ArgumentParser(description="CLI options for visualisation")
 
     parser.add_argument(
-        '-s',
-        '--source', 
+        "-s",
+        "--source",
         type=str,
-        default='db',
+        default="db",
         choices=["db", "json", "pkl"],
-        help='Path at the start of the workflow'
-        )
-     
+        help="Path at the start of the workflow",
+    )
+
     parser.add_argument(
-        '-f',
-        '--fname', 
+        "-f",
+        "--fname",
         type=pathlib.Path,
         default=database.DATABASE,
-        help='Path to the status object (DB/Pickle/JSON)'
-        )
-    
+        help="Path to the status object (DB/Pickle/JSON)",
+    )
+
     parser.add_argument(
-        '-u', 
-        '--uuid',
+        "-u",
+        "--uuid",
         type=uuid.UUID,
         default=None,
-        help='UUID of the start of the workflow'
-        )
-    
+        help="UUID of the start of the workflow",
+    )
+
     parser.add_argument(
-        '-p', 
-        '--path',
+        "-p",
+        "--path",
         type=pathlib.Path,
         default=None,
-        )
-    
+    )
+
     # Parse arguments
     args = parser.parse_args(argv)
     return args
@@ -103,10 +104,10 @@ def get_args(argv):
 def load_wf(args):
     """
     Load workflow, based on user input
-    
+
     Args:
         args (argparse.Namespace):          Arguments
-    
+
     Return:
         wf (workflow.Workflow):             Workflow
     """
@@ -118,16 +119,20 @@ def load_wf(args):
     # Main database method - query via UUID or path trivially as it's flat
     if args.source == "db":
         if not args.fname.is_file():
-            raise Exception(f"Database at \"{args.fname}\" not found")
+            raise Exception(f'Database at "{args.fname}" not found')
         if args.uuid is not None:
-            workflow = database.query_step_by_uuid(db_path=f"{database.RDBMS}:///{args.fname}", uuid=args.uuid)
+            workflow = database.query_step_by_uuid(
+                db_path=f"{database.RDBMS}:///{args.fname}", uuid=args.uuid
+            )
         elif args.path is not None:
-            workflow = database.query_step_by_path(db_path=f"{database.RDBMS}:///{args.fname}", path=str(args.path))
+            workflow = database.query_step_by_path(
+                db_path=f"{database.RDBMS}:///{args.fname}", path=str(args.path)
+            )
 
     # Secondary method - use the pickle file, loop through top level
     elif args.source == "pkl":
         if not args.fname.is_file():
-            raise Exception(f"Pickle file at \"{args.fname}\" not found")
+            raise Exception(f'Pickle file at "{args.fname}" not found')
         obj = steps.load_workflow_pickle(args.fname)
         print(obj.uuid, type(obj.uuid), args.uuid, type(args.uuid))
         if args.uuid is not None:
@@ -150,7 +155,7 @@ def load_wf(args):
     # Secondary method - use the JSON file, loop through top level
     elif args.source == "json":
         if not args.fname.is_file():
-            raise Exception(f"JSON file at \"{args.fname}\" not found")
+            raise Exception(f'JSON file at "{args.fname}" not found')
         with open(args.fname, "r") as fobj:
             obj = json.load(fobj)
         if args.uuid is not None:
@@ -172,7 +177,7 @@ def load_wf(args):
 
     # Catch other source types
     else:
-        raise Exception(f"Workflow source \"{args.source}\" not recognised")
+        raise Exception(f'Workflow source "{args.source}" not recognised')
 
     # Raise exception if nothing is found
     if workflow is None:

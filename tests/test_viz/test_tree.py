@@ -1,36 +1,26 @@
-"""
-"""
+""" """
 
 import pytest
 
 import viz.database as database
 import viz.steps as steps
-import viz.table as table
 import viz.tree as tree
 
 
-
-# def test_tree_db(tmp_path, workflow):
-#     """
-#     """
-#     fname = f"{database.RDBMS}:///{tmp_path / 'test.db'}"
-#     database.setup_database(fname)
-#     database.add_step(db_path=fname, step=workflow)
-#     tree.main(argv=["--source", "db", "--fname", str(tmp_path / "test.db") , "--uuid", workflow.uuid.hex])
-
-    
 @pytest.mark.parametrize(
-        ("source", "path", "key"),
-        [
-         ("db", "test.db", "uuid"), 
-         ("db", "test.db", "path"), 
-         ("pkl", "test.pkl", "uuid"), 
-         ("pkl", "test.pkl", "path"), 
-        #  ("json", "test.json", "uuid"), 
-        #  ("json", "test.json", "path"), 
-         ])
-def test_tree_db(tmp_path, workflow, source, path, key):
+    ("source", "path", "key"),
+    [
+        ("db", "test.db", "uuid"),
+        ("db", "test.db", "path"),
+        ("pkl", "test.pkl", "uuid"),
+        ("pkl", "test.pkl", "path"),
+        #  ("json", "test.json", "uuid"),
+        #  ("json", "test.json", "path"),
+    ],
+)
+def test_tree(tmp_path, workflow, source, path, key):
     """
+    Test tree print successfully builds for different inputs
     """
     if source == "db":
         # Database
@@ -51,6 +41,6 @@ def test_tree_db(tmp_path, workflow, source, path, key):
     elif key == "path":
         value = str(workflow.path)
 
-    tree.main(argv=["--source", source, "--fname", str(tmp_path / path) , f"--{key}", value])
-
-    
+    tree.main(
+        argv=["--source", source, "--fname", str(tmp_path / path), f"--{key}", value]
+    )

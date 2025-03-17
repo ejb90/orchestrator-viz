@@ -18,13 +18,14 @@ class Tree:
         wf (workflow.Workflow):         workflow.Workflow instance
         tree (rich.tree.Tree):          rich.tree.Tree instance
     """
+
     def __init__(self, wf, options=settings.Settings()):
         """
         Initialise Tree
 
         Args:
             wf (workflow.Workflow):         workflow.Workflow instance
-        
+
         Returns:
             None
         """
@@ -40,20 +41,20 @@ class Tree:
         Initialise tree instance
 
         Args:
-        
+
         Returns:
             None
         """
         self.tree = rich.tree.Tree(self.wf.name)
 
     def build_tree(self, wf, tree):
-        """ 
+        """
         Iteratively build the workflow tree
 
         Args:
             wf (workflow.Workflow):         workflow.Workflow instance
             tree (rich.tree.Tree):          initial Tree instance
-        
+
         Returns:
             tree (rich.tree.Tree):          updated Tree instance
 
@@ -65,12 +66,12 @@ class Tree:
         return tree
 
     def print(self, wf):
-        """ 
+        """
         Print the Table view to console
-        
+
         Args:
             wf (workflow.Workflow):         workflow.Workflow instance
-        
+
         Returns:
             None
         """
@@ -79,7 +80,13 @@ class Tree:
 
 
 def main(argv=sys.argv[1:]):
-    """ """
+    """
+    Args:
+        argv (list):        List of arguments (for pytest compatability)
+
+    Returns:
+        None
+    """
     args = settings.get_args(argv)
     wf = settings.load_wf(args)
     Tree(wf)
