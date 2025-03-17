@@ -8,15 +8,47 @@ import pickle
 import random
 import uuid
 
+import viz.database as database
 
 
 STATUS = [
     "unstarted",
     "pending",
     "running",
-    "completed",
     "failed",
+    "completed",
 ]
+
+
+class Scheduler:
+    """ """
+    def __init__(self):
+        """ """
+        self.type = "slurm"
+        self.partition = "parallel"
+        self.nodes = 1
+        self.ppn = 1
+        self.procs = 1
+        self.wallclock = 1
+
+class Job:
+    """
+    Holds data about a single (HPC) job
+    
+    TODO - match up with real Scheduler object
+    """
+    def __init__(self):
+        """ """
+        self.scheduler = None
+        self.job_id = None
+
+        self.partition = "parallel"
+        self.nodes = 1
+        self.ppn = 1
+        self.procs = 1
+        self.wallclock = 1
+        self.wallclock_remaining = None
+        self.wallclock_expired = None
 
 
 class Step:
@@ -30,6 +62,7 @@ class Step:
         self.uuid = uuid.uuid4()
         self.ctime = datetime.datetime.now()
         self.mtime = datetime.datetime.now()
+        self.scheduler = None
 
 
 class Task(Step):
@@ -52,6 +85,25 @@ class Workflow(Step):
         """ """
         for step in self.steps:
             step.path = self.path / step.name.replace(" ", "_").lower()
+
+
+#========================================================================================================================
+# Tmp to mimic baseline
+#========================================================================================================================
+def make_tmp_task(name, status):
+    """
+    Build a temp task
+    """
+    scheduler = Scheduler()
+    scheduler.partition = "parallel" if name == "step 3" else "serial"
+    scheduler.nodes = 4 if name == "step 3" else 1
+    scheduler.ppn = 64 if name == "step 3" else 1
+    scheduler.procs = scheduler.nodes * scheduler.ppn
+    
+    task = Task(name, status)
+    task.scheduler = scheduler
+    
+    return task
 
 
 def make_tmp_workflow():
@@ -77,10 +129,17 @@ def make_tmp_workflow():
 
     for model in models:
         tasks = []
+        status = None
         for step in steps:
-            tasks.append(Task(step, STATUS[random.randint(0, 4)]))
+            roll = random.randint(0, 19)
+            if roll < 15 and status in (None, "completed"):
+                status = "completed"
+            else:
+                roll = random.randint(0, 3)
+                status = STATUS[roll]
+            tasks.append(make_tmp_task(step, status))
         wf.steps.append(
-            Workflow(model, steps=tasks, status=STATUS[random.randint(0, 4)])
+            Workflow(model, steps=tasks, status="completed" if all([t.status=="completed" for t in tasks]) else "failed")
         )
         wf.steps[-1].fix_paths()
     wf.fix_paths()

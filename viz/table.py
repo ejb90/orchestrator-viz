@@ -8,14 +8,6 @@ import viz.settings as settings
 import viz.steps as steps
 
 
-COLUMNS = [
-    "name",
-    "status",
-    "path",
-    "uuid",
-    "ctime",
-    "mtime",
-]
 COLUMN2COLUMNTITLE = {
     "name": "Name",
     "status": "Status",
@@ -31,7 +23,7 @@ class Table:
     Show the Workflow in Table view
     """
 
-    def __init__(self, wf, columns=COLUMNS):
+    def __init__(self, wf, columns=None, options=settings.Settings()):
         """
         Initialise table
 
@@ -40,7 +32,8 @@ class Table:
             columns (list):                 List of column names to print 
         """
         self.wf = wf
-        self.columns = columns
+        self.columns = columns if columns is not None else options.columns
+        self.settings = options
         
         self.initialise_table()
         self.build_table(self.wf.steps)
@@ -63,7 +56,7 @@ class Table:
         Returns:
             None
         """
-        console = rich.console.Console()
+        console = rich.console.Console(color_system=self.settings.colour)
         console.print(self.table)
 
     def build_table(self, stps):
@@ -98,6 +91,7 @@ class Table:
 
 def main():
     """ """
+    steps.make_tmp_workflow()
     args = settings.get_args()
     wf = settings.load_wf(args)
     Table(wf)

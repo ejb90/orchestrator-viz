@@ -4,7 +4,9 @@ import argparse
 import json
 import pathlib
 import pickle
+import uuid
 
+import viz.database as database
 import viz.steps as steps
 
 
@@ -15,6 +17,31 @@ STATUS2COLOUR = {
     "completed": "green",
     "failed": "red",
 }
+
+
+# === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings ===
+class Settings:
+    """
+    Output settings
+
+    This should just be the core.Settings class eventually
+
+    Attrs:
+        TODO
+    """
+    def __init__(self, fname="settings.yaml"):
+        """
+        """
+        self.columns = [
+            "name",
+            "status",
+            "path",
+            "uuid",
+            "ctime",
+            "mtime",
+            ]
+        self.colour = "standard"
+# === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings ===
 
 
 def get_args():
@@ -109,7 +136,7 @@ def load_wf(args):
         if not args.database.is_file():
             raise Exception(f"Database at \"{args.database}\" not found")
         if args.uuid is not None:
-            pass
+            workflow = database.query_step(uuid=uuid.UUID(args.uuid))
             # database.get(args.database, args.uuid)
         elif args.path is not None:
             # query database based on path name

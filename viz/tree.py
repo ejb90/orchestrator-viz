@@ -13,7 +13,7 @@ class Tree:
         wf (workflow.Workflow):         workflow.Workflow instance
         tree (rich.tree.Tree):          rich.tree.Tree instance
     """
-    def __init__(self, wf):
+    def __init__(self, wf, options=settings.Settings()):
         """
         Initialise Tree
 
@@ -24,6 +24,7 @@ class Tree:
             None
         """
         self.wf = wf
+        self.settings = options
 
         self.initialise_tree()
         self.tree = self.build_tree(self.wf, self.tree)
@@ -68,7 +69,8 @@ class Tree:
         Returns:
             None
         """
-        rich.print(self.tree)
+        console = rich.console.Console(color_system=self.settings.colour)
+        console.print(self.tree)
 
 
 def main():
