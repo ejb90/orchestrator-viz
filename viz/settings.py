@@ -18,7 +18,7 @@ STATUS2COLOUR = {
 }
 
 
-# === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings ===
+# === TO REPLACE WITH core.Settings instance ==============================================
 class Settings:
     """
     Output settings
@@ -38,11 +38,11 @@ class Settings:
             "uuid",
             "ctime",
             "mtime",
+            # "scheduler",
+            
         ]
         self.colour = "standard"
-
-
-# === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings ===
+# === TO REPLACE WITH core.Settings instance ==============================================
 
 
 def get_args(argv):
@@ -84,7 +84,7 @@ def get_args(argv):
     parser.add_argument(
         "-u",
         "--uuid",
-        type=uuid.UUID,
+        type=str,
         default=None,
         help="UUID of the start of the workflow",
     )
@@ -98,6 +98,10 @@ def get_args(argv):
 
     # Parse arguments
     args = parser.parse_args(argv)
+
+    if isinstance(args.uuid, str):
+        args.uuid = uuid.UUID(args.uuid)
+
     return args
 
 
@@ -114,7 +118,6 @@ def load_wf(args):
     workflow = None
 
     # In order preference, db, pkl, json, unless explicit
-    print(args)
 
     # Main database method - query via UUID or path trivially as it's flat
     if args.source == "db":
@@ -134,7 +137,6 @@ def load_wf(args):
         if not args.fname.is_file():
             raise Exception(f'Pickle file at "{args.fname}" not found')
         obj = steps.load_workflow_pickle(args.fname)
-        print(obj.uuid, type(obj.uuid), args.uuid, type(args.uuid))
         if args.uuid is not None:
             if obj.uuid == args.uuid:
                 workflow = obj

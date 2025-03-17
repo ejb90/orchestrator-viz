@@ -2,6 +2,8 @@
 Table visualisation of workflow
 """
 
+import sys
+
 import rich.console
 import rich.table
 
@@ -16,6 +18,7 @@ COLUMN2COLUMNTITLE = {
     "uuid": "UUID",
     "ctime": "Creation Time",
     "mtime": "Modification Time",
+    "scheduler": "Scheduler",
 }
 
 
@@ -92,6 +95,8 @@ class Table:
                     rows.append(step.uuid.hex)
                 elif column in ("ctime", "mtime"):
                     rows.append(getattr(step, column).strftime("%Y-%m-%d %H:%M:%S"))
+                elif column == 'scheduler':
+                    rows.append(step.scheduler.table if step.scheduler else None)
                 else:
                     rows.append(str(getattr(step, column)))
 
@@ -101,7 +106,8 @@ class Table:
                 self.build_table(step.steps)
 
 
-def main():
+
+def main(argv=sys.argv[1:]):
     """
     Args:
         argv (list):        List of arguments (for pytest compatability)
@@ -109,8 +115,13 @@ def main():
     Returns:
         None
     """
-    steps.make_tmp_workflow()
-    args = settings.get_args()
+    # import viz.database as database
+    # wf = steps.make_tmp_workflow()
+    # database.setup_database()
+    # database.add_step(step=wf)
+    # print(wf.uuid)
+
+    args = settings.get_args(argv)
     wf = settings.load_wf(args)
     Table(wf)
 

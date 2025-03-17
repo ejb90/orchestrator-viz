@@ -46,43 +46,24 @@ class Scheduler:
         self.ppn = 1
         self.procs = 1
         self.wallclock = 1
+        self.wallclock_remaining = None
+        self.wallclock_expired = None
 
-
-class Job:
-    """
-    Holds data about a single (HPC) job
-
-    TODO - match up with real Scheduler object
-
-    Attrs:
-        type (str):         Scheduler type
-        partition (str):    Partition type
-        nodes (int):        Number of nodes
-        ppn (int):          Number of procs per node
-        procs (int):        Total number of procs
-        wallclock (int):    Wallclock [s]
-
-    """
-
-    def __init__(self):
+    @property
+    def table(self):
         """
-        Initialise job
+        Print scheduler in table format
 
         Args:
 
         Returns:
             None
         """
-        self.scheduler = None
-        self.job_id = None
-
-        self.partition = "parallel"
-        self.nodes = 1
-        self.ppn = 1
-        self.procs = 1
-        self.wallclock = 1
-        self.wallclock_remaining = None
-        self.wallclock_expired = None
+        string = f"{self.type}-{self.partition}: {self.nodes}n*{self.ppn}ppn\n"
+        string += f"Requested WC: {self.wallclock}\n"
+        string += f"Current WC: {self.wallclock_expired}\n"
+        string += f"Remaining WC: {self.wallclock_remaining}"
+        return string
 
 
 class Step:
@@ -193,7 +174,7 @@ class Workflow(Step):
 
 
 # ========================================================================================================================
-# Tmp to mimic baseline
+# Tmp to mimic suite
 # ========================================================================================================================
 def make_tmp_task(name, status):
     """
@@ -284,7 +265,3 @@ def load_workflow_pickle(fname):
     with open(fname, "rb") as fobj:
         obj = pickle.load(fobj)
     return obj
-
-
-if __name__ == "__main__":
-    make_tmp_workflow()
