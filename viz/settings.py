@@ -44,7 +44,7 @@ class Settings:
 # === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings === TO REPLACE WITH core.Settings ===
 
 
-def get_args():
+def get_args(argv):
     """
     CLI args for visualisation
 
@@ -73,47 +73,30 @@ def get_args():
         )
      
     parser.add_argument(
-        '-d',
-        '--database', 
+        '-f',
+        '--fname', 
         type=pathlib.Path,
-        # default=database.DATABASE,
-        default=pathlib.Path("orchestrator.db"),
-        help='Path at the start of the workflow'
-        )
-    
-    parser.add_argument(
-        '-p', 
-        '--pickle',
-        type=pathlib.Path,
-        default=None,
-        help='Location of the pickle status file'
-        )
-    
-    parser.add_argument(
-        '-j', 
-        '--json',
-        type=pathlib.Path,
-        default=None,
-        help='Location of the JSON status file'
+        default=database.DATABASE,
+        help='Path to the status object (DB/Pickle/JSON)'
         )
     
     parser.add_argument(
         '-u', 
         '--uuid',
-        type=str,
+        type=uuid.UUID,
         default=None,
         help='UUID of the start of the workflow'
         )
     
     parser.add_argument(
-        '-q', 
+        '-p', 
         '--path',
         type=pathlib.Path,
         default=None,
         )
     
     # Parse arguments
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     return args
 
 
@@ -130,23 +113,23 @@ def load_wf(args):
     workflow = None
 
     # In order preference, db, pkl, json, unless explicit
+    print(args)
 
     # Main database method - query via UUID or path trivially as it's flat
     if args.source == "db":
-        if not args.database.is_file():
-            raise Exception(f"Database at \"{args.database}\" not found")
+        if not args.fname.is_file():
+            raise Exception(f"Database at \"{args.fname}\" not found")
         if args.uuid is not None:
-            workflow = database.query_step(uuid=uuid.UUID(args.uuid))
-            # database.get(args.database, args.uuid)
+            workflow = database.query_step_by_uuid(db_path=f"{database.RDBMS}:///{args.fname}", uuid=args.uuid)
         elif args.path is not None:
-            # query database based on path name
-            pass
+            workflow = database.query_step_by_path(db_path=f"{database.RDBMS}:///{args.fname}", path=str(args.path))
 
     # Secondary method - use the pickle file, loop through top level
     elif args.source == "pkl":
-        if not args.pickle.is_file():
-            raise Exception(f"Pickle file at \"{args.pickle}\" not found")
-        obj = steps.load_workflow_pickle(args.pickle)
+        if not args.fname.is_file():
+            raise Exception(f"Pickle file at \"{args.fname}\" not found")
+        obj = steps.load_workflow_pickle(args.fname)
+        print(obj.uuid, type(obj.uuid), args.uuid, type(args.uuid))
         if args.uuid is not None:
             if obj.uuid == args.uuid:
                 workflow = obj
@@ -166,9 +149,9 @@ def load_wf(args):
 
     # Secondary method - use the JSON file, loop through top level
     elif args.source == "json":
-        if not args.database.is_file():
-            raise Exception(f"JSON file at \"{args.json}\" not found")
-        with open(args.pickle, "r") as fobj:
+        if not args.fname.is_file():
+            raise Exception(f"JSON file at \"{args.fname}\" not found")
+        with open(args.fname, "r") as fobj:
             obj = json.load(fobj)
         if args.uuid is not None:
             if obj.uuid == args.uuid:

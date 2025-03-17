@@ -7,6 +7,8 @@ import sqlalchemy
 import sqlalchemy.ext
 import sqlalchemy.orm
 
+import viz.steps as steps
+
 
 RDBMS = "sqlite"
 DATABASE = pathlib.Path("orchestrator.db")
@@ -17,7 +19,7 @@ BASE = sqlalchemy.orm.declarative_base()
 
 
 # Define models
-class User(BASE):
+class Step(BASE):
     __tablename__ = 'steps'
     
     id = sqlalchemy.Column(sqlalchemy.UUID, primary_key=True)
@@ -53,7 +55,7 @@ def add_step(db_path=DB_ADDRESS, step=None):
 
     """
     # Build wrapper class
-    obj = User(
+    obj = Step(
         id=step.uuid,
         path=str(step.path),
         ctime=step.ctime,
@@ -71,7 +73,7 @@ def add_step(db_path=DB_ADDRESS, step=None):
     session.commit()
 
 
-def query_step(db_path=DB_ADDRESS, uuid=None):
+def query_step_by_uuid(db_path=DB_ADDRESS, uuid=None):
     """
     Query and display data from the database
     
@@ -82,16 +84,22 @@ def query_step(db_path=DB_ADDRESS, uuid=None):
 
     engine = sqlalchemy.create_engine(db_path, echo=False)
     session = sqlalchemy.orm.sessionmaker(bind=engine)()
-    obj = session.get(User, uuid)
-    step = obj.step
+    obj = session.get(Step, uuid)
+    step = obj.step if obj is not None else None
     return step
 
 
-if __name__ == "__main__":
-    import uuid
-    import viz.steps
-    wf = viz.steps.make_tmp_workflow()
-
-    setup_database()
-    add_step(step=wf)
-    print(wf.uuid)
+def query_step_by_path(db_path=DB_ADDRESS, path=None):
+    """
+    """
+    engine = sqlalchemy.create_engine(db_path, echo=False)
+    session = sqlalchemy.orm.sessionmaker(bind=engine)()
+    objs = session.query(Step).filter(Step.path == path).all()
+    # Make this not a failure
+    if len(objs) > 1:
+        raise Exception(f"More than one object with the path \"{path}\"")
+    if len(objs) == 0 or objs[0] is None:
+        step = None
+    else:
+        step = objs[0].step
+    return step

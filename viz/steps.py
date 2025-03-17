@@ -145,11 +145,15 @@ def make_tmp_workflow():
     wf.fix_paths()
 
     wf.steps[2].steps.append(Task("new step", status="unstarted"))
-
-    with open("status.pkl", "wb") as fobj:
-        pickle.dump(wf, fobj)
-    
     return wf
+
+
+def dump_workflow_pickle(obj, fname):
+    """
+    Dump workflow to pickle file
+    """
+    with open(fname, "wb") as fobj:
+        pickle.dump(obj, fobj)
 
 
 def load_workflow_pickle(fname):

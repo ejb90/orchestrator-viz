@@ -1,3 +1,7 @@
+"""
+Table visualisation of workflow
+"""
+
 import pathlib
 
 import click

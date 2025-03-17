@@ -1,3 +1,8 @@
+"""
+Tree visualisation of workflow
+"""
+
+import sys
 import rich
 import rich.tree
 
@@ -73,9 +78,9 @@ class Tree:
         console.print(self.tree)
 
 
-def main():
+def main(argv=sys.argv[1:]):
     """ """
-    args = settings.get_args()
+    args = settings.get_args(argv)
     wf = settings.load_wf(args)
     Tree(wf)
 

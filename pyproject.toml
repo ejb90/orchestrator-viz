@@ -10,6 +10,13 @@ dependencies = [
     "ruff>=0.11.0",
 ]
 
+
 [project.scripts]
 wf-tree = "viz.tree:main"
 wf-table = "viz.table:main"
+
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
