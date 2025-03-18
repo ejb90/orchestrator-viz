@@ -70,6 +70,8 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/modules.rst
+docs/viz.rst
 
 # PyBuilder
 .pybuilder/
@@ -165,6 +167,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# MacOS
+.DS_Store
 
 # Orchestrator junk
 orchestrator.db
