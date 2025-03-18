@@ -19,18 +19,15 @@ extensions = [
     'sphinx.ext.napoleon',  # Support for NumPy and Google style docstrings
     'sphinx.ext.viewcode',  # Add links to view the source code
     'sphinx.ext.doctest',   # Support for doctests in docstrings
-]
+    'sphinx_rtd_theme',     # Modern style
+    ]
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinx_rtd_theme'  # Use the Read the Docs theme
-html_static_path = ['_static']
-
-# -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'  # Use the Read the Docs theme
 html_static_path = ['_static']
 
 # -- Napoleon settings -------------------------------------------------------

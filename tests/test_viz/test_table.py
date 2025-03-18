@@ -38,6 +38,7 @@ def test_table(tmp_path, workflow, source, path, key):
         fname = tmp_path / path
         steps.dump_workflow_json(workflow, fname)
 
+    # set both to string
     if key == "uuid":
         value = workflow.uuid.hex
     elif key == "path":

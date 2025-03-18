@@ -106,7 +106,6 @@ class Table:
                 self.build_table(step.steps)
 
 
-
 def main(argv=sys.argv[1:]):
     """
     Args:
