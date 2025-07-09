@@ -114,12 +114,6 @@ def main(argv=sys.argv[1:]):
     Returns:
         None
     """
-    # import viz.database as database
-    # wf = steps.make_tmp_workflow()
-    # database.setup_database()
-    # database.add_step(step=wf)
-    # print(wf.uuid)
-
     args = settings.get_args(argv)
     wf = settings.load_wf(args)
     Table(wf)

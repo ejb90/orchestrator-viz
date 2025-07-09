@@ -8,6 +8,8 @@ import pickle
 import random
 import uuid
 
+import viz.database as database
+
 
 STATUS = [
     "unstarted",
@@ -99,6 +101,7 @@ class Step:
         self.ctime = datetime.datetime.now()
         self.mtime = datetime.datetime.now()
         self.scheduler = None
+        self.parent_flow_type = "serial"
 
 
 class Task(Step):
@@ -128,7 +131,7 @@ class Task(Step):
             None
         """
         super().__init__(name, status)
-
+        self.type = "task"
 
 class Workflow(Step):
     """
@@ -159,6 +162,8 @@ class Workflow(Step):
         """
         super().__init__(name, status)
         self.steps = steps
+        self.flow_type = 'serial'
+        self.type = "workflow"
 
     def fix_paths(self):
         """
@@ -244,6 +249,7 @@ def make_tmp_workflow():
             )
         )
         wf.steps[-1].fix_paths()
+
     wf.fix_paths()
 
     wf.steps[2].steps.append(Task("new step", status="unstarted"))
@@ -265,3 +271,24 @@ def load_workflow_pickle(fname):
     with open(fname, "rb") as fobj:
         obj = pickle.load(fobj)
     return obj
+
+
+def add_steps_iteratively(wf):
+    database.add_step(step=wf)
+    for step in wf.steps:
+        if step.type == "workflow":
+            add_steps_iteratively(step)
+        else:
+            database.add_step(step=step)
+
+def main():
+    """Dump tmp workflow."""
+    wf = make_tmp_workflow()
+    database.setup_database()
+    add_steps_iteratively(wf)
+    # print(wf.uuid)
+
+
+
+if __name__ == "__main__":
+    main()

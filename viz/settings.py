@@ -17,6 +17,10 @@ STATUS2COLOUR = {
     "failed": "red",
 }
 
+TYPE2FONT = {
+    "serial": "standard",
+    "parallel": "italics",
+}
 
 # === TO REPLACE WITH core.Settings instance ==============================================
 class Settings:

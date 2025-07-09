@@ -1,0 +1,92 @@
+
+{% macro sort_url(column) %}
+    {%- set new_order = 'asc' -%}
+    {%- if sort_by == column and order == 'asc' -%}
+        {%- set new_order = 'desc' -%}
+    {%- endif -%}
+    ?sort_by={{ column }}&order={{ new_order }}
+    {% if id_filter %}&id={{ id_filter }}{% endif %}
+    {% if path_filter %}&path={{ path_filter }}{% endif %}
+    {% if ctime_filter %}&ctime={{ ctime_filter }}{% endif %}
+    {% if mtime_filter %}&mtime={{ mtime_filter }}{% endif %}
+{% endmacro %}
+
+{#
+{% macro sort_url(col_name) %}
+    {%- set args = request.args.to_dict() -%}
+    {%- if args.get('sort_by') == col_name -%}
+        {%- set args['order'] = 'desc' if args.get('order', 'asc') == 'asc' else 'asc' -%}
+    {%- else -%}
+        {%- set args['sort_by'] = col_name -%}
+        {%- set args['order'] = 'asc' -%}
+    {%- endif -%}
+    {{ url_for('index', **args) }}
+{% endmacro %}
+#}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Step Entries</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h1 class="mb-4">Steps</h1>
+
+    <!-- Filter form -->
+    <form method="get" class="row g-3 mb-4">
+        {% for f in filters %}
+        <div class="col-md-4">
+            <input 
+                type="text" 
+                class="form-control" 
+                name="{{ f.name }}" 
+                placeholder="{{ f.placeholder }}" 
+                value="{{ '' }}">
+        </div>
+        {% endfor %}
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+
+    <!-- Table -->
+    <table class="table table-striped table-bordered table-hover bg-white">
+        <thead class="table-dark">
+        <tr>
+            {% for col in columns %}
+                <th>
+                    <a href="{{ sort_url(col.name) }}">
+                        {{ col.label }}
+                        {% if sort_by == col.name %}
+                            {{ '🔼' if order == 'asc' else '🔽' }}
+                        {% endif %}
+                    </a>
+                </th>
+            {% endfor %}
+        </tr>
+        </thead>
+
+        <tbody>
+            {% for entry in entries %}
+                <tr>
+                    {% for col in columns %}
+                        <td>{{ entry[col.name] | datetimefmt if 'time' in col.name else entry[col.name] }}</td>
+                    {% endfor %}
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="{{ columns|length }}" class="text-center">No entries found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+
+
+    </table>
+</div>
+</body>
+</html>

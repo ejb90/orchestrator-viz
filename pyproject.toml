@@ -1,19 +1,33 @@
 [project]
-name = "orchestrator-viz"
+name = "orchestrator"
 version = "0.1.0"
 description = "Visualisation for workflow tools"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "dash>=3.1.1",
+    "dash-bootstrap-components>=2.0.3'
+    "dash-table>=5.0.0",
     "rich>=13.9.4",
     "ruff>=0.11.0",
+    "flask>=3.1.1",
+    "numpy>=2.3.1",
+    "pandas>=2.3.0",
+    "pymysql>=1.1.1",
+    "pytest>=8.3.5",
+    "sqlalchemy>=2.0.41",
 ]
-
 
 [project.scripts]
 wf-tree = "viz.tree:main"
 wf-table = "viz.table:main"
 
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["viz"]
 
 [tool.pytest.ini_options]
 testpaths = [

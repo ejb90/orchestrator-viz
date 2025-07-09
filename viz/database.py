@@ -26,6 +26,8 @@ class Step(BASE):
     __tablename__ = "steps"
 
     id = sqlalchemy.Column(sqlalchemy.UUID, primary_key=True)
+    name = sqlalchemy.Column(sqlalchemy.String)
+    status = sqlalchemy.Column(sqlalchemy.String)
     path = sqlalchemy.Column(sqlalchemy.String)
     ctime = sqlalchemy.Column(sqlalchemy.DateTime)
     mtime = sqlalchemy.Column(sqlalchemy.DateTime)
@@ -62,6 +64,8 @@ def add_step(db_path=DB_ADDRESS, step=None):
     # Build wrapper class
     obj = Step(
         id=step.uuid,
+        name=step.name,
+        status=step.status,
         path=str(step.path),
         ctime=step.ctime,
         mtime=step.mtime,

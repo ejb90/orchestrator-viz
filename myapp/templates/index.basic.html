@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Viewer</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+</head>
+<body>
+
+    <h1>Data Table</h1>
+
+    <form method="get">
+        <input name="id" placeholder="ID" value="{{ request.args.get('id', '') }}">
+        <input name="path" placeholder="Path" value="{{ request.args.get('path', '') }}">
+        <button type="submit">Filter</button>
+    </form>
+
+    <table id="data" class="display">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Path</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in steps %}
+            <tr>
+                <td>{{ e.id }}</td>
+                <td>{{ e.path }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <!-- <script>
+        $(document).ready(function() {
+            $('#data').DataTable();
+        });
+    </script> -->
+</body>
+</html>
