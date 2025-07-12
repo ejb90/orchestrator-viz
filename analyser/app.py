@@ -1,4 +1,4 @@
-from dash import dcc, Dash, html, dash_table, Input, Output, State, ctx
+from dash import dcc, Dash, html, dash_table, Input, Output, State, ctx, MATCH
 import pandas as pd
 import plotly.express as px
 
@@ -113,7 +113,7 @@ def build_table(df):
                 {
                     "if": {"column_id": col},
                     "textAlign": "right"
-                } 
+                }
             )
     style_cell_conditional.append(
         {
@@ -141,7 +141,7 @@ def build_table(df):
             "maxWidth": "10em",
             "wordBreak": "break-word",
         }
-    )        
+    )
 
     main_table = dbc.Row(
         [
@@ -223,7 +223,8 @@ def build_table(df):
         className="mb-4",
     )
 
-    return main_table, summary_table
+    tables = html.Div([main_table, summary_table])
+    return tables
 
 
 def build_plot_x_vs_y_per_zval_forall_aval(df, xval, yval, zval, aval):
@@ -233,14 +234,40 @@ def build_plot_x_vs_y_per_zval_forall_aval(df, xval, yval, zval, aval):
     fig = px.line(df, x=xval, y=yval, color=zval, markers=True,
               title=f"{yval.title()} vs {xval.title()} by {zval.title()}")
 
+    dropdown = dcc.Dropdown(
+        id='zval-filter',
+        options=[{'label': val, 'value': val} for val in df[zval].unique()],
+        multi=True,
+        value=df[zval].unique().tolist(),  # Default to all selected
+        placeholder=f"Select {zval} values to display"
+    ),
+
     figure = dbc.Row(
         [
-            dbc.Col(dcc.Graph(figure=fig)),
+            dbc.Row(dropdown),
+            dbc.Row(dcc.Graph(figure=fig, id='line-plot')),
         ],
         className="mb-4",
     )
 
+    dcc.Store(id='config-store', data={'xval': xval, 'yval': yval, 'zval': zval})
+
     return figure
+
+
+def make_toggleable(element, name):
+    """"""
+    collapse_button = dbc.Button(
+        f"Toggle {name.title()}",
+        id={"type": "collapse-button", "index": name},
+        className="mb-3",
+        color="primary",
+        n_clicks=0,
+    )
+
+    element = dbc.Collapse(element, id={"type": "collapse-element", "index": name}, is_open=True)
+
+    return collapse_button, element
 
 
 def build_webapp(df):
@@ -251,20 +278,29 @@ def build_webapp(df):
 
     preamble = build_preable()
     download_buttons = build_download_buttons()
-    main_table, summary_table = build_table(df)
+    tables = build_table(df)
     runtime_vs_version_plot_mesh =  build_plot_x_vs_y_per_zval_forall_aval(df, "version", "runtime", "model", "mesh")
     runtime_vs_version_plot_simulate =  build_plot_x_vs_y_per_zval_forall_aval(df, "version", "runtime", "model", "simulate")
 
-    # main_table = dbc.Collapse(main_table, id="collapse-summary", is_open=True)
+
+    collapse_button1, tables = make_toggleable(tables, "table")
+    collapse_button2, runtime_vs_version_plot_mesh = make_toggleable(runtime_vs_version_plot_mesh, "runtime vs version mesh")
+    collapse_button3, runtime_vs_version_plot_simulate = make_toggleable(runtime_vs_version_plot_simulate, "runtime vs version simulate")
+
 
     app.layout = dbc.Container(
         [
             header,
             preamble,
             download_buttons,
-            main_table,
-            summary_table,
+
+            collapse_button1,
+            tables,
+
+            collapse_button2,
             runtime_vs_version_plot_mesh,
+
+            collapse_button3,
             runtime_vs_version_plot_simulate,
         ],
         fluid=True,
@@ -335,14 +371,36 @@ def sync_hidden_columns(hidden_cols):
 
 
 @app.callback(
-    Output("collapse-summary", "is_open"),
-    Input("btn-toggle-summary", "n_clicks"),
-    State("collapse-summary", "is_open"),
+    Output({"type": "collapse-element", "index": MATCH}, "is_open"),
+    Input({"type": "collapse-button", "index": MATCH}, "n_clicks"),
+    State({"type": "collapse-element", "index": MATCH}, "is_open"),
 )
-def toggle_summary(n_clicks, is_open):
-    if n_clicks:
+def toggle_collapse(n, is_open):
+    if n:
         return not is_open
     return is_open
+
+
+@app.callback(
+    Output({"type": "collapse-element", "index": MATCH}, "figure"),
+    Input('zval-filter', 'value'),
+    Input('config-store', 'data')
+)
+def update_figure(selected_values, config):
+    # Filter the dataframe
+    xval = config['xval']
+    yval = config['yval']
+    zval = config['zval']
+
+    filtered_df = df[df[zval].isin(selected_values)]
+
+    # Create the plot
+    fig = px.line(
+        filtered_df, x=xval, y=yval, color=zval, markers=True,
+        title=f"{yval.title()} vs {xval.title()} by {zval.title()}"
+    )
+    return fig
+
 
 # Run the app
 if __name__ == "__main__":
