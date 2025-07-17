@@ -2,6 +2,8 @@
 Visualisation constants
 """
 
+import pathlib
+
 import pytest
 
 import viz.steps as steps
@@ -20,3 +22,10 @@ def workflow():
 # def database(workflow):
 #     database.setup_database()
 #     database.add_step(step=workflow)
+
+
+@pytest.fixture
+def archive_dir():
+    """A directory with a collection of files/directiores to test methods."""
+    return pathlib.Path(__file__).resolve().parent / "inputs" / "archive_test_directory"
+    
