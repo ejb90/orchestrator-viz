@@ -1,5 +1,6 @@
 """"""
 import pathlib
+import re
 import tarfile
 
 import pytest 
@@ -20,7 +21,7 @@ import archiver.archiver as archiver
 )
 def test_find_archive_fojbs(archive_dir, include, exclude, outputs):
     """"""
-    fobjs = archiver.find_archive_fobjs(archive_dir, include=include, exclude=exclude)    
+    fobjs = archiver.find_storage_fobjs(archive_dir, include=include, exclude=exclude)    
     fobjs = [str(fobj.relative_to(archive_dir)) for fobj in fobjs]
     assert sorted(fobjs) == sorted(outputs)
 
@@ -83,3 +84,60 @@ def test_compress_fobjs(tmp_path, archive_dir):
     assert len(fnames) == 2
     assert fnames[0].is_file()
     assert fnames[1].is_file()
+
+
+#==================================================================================================
+def test_chown():
+    """"""
+    pass
+
+
+def test_chgrp():
+    """"""
+    pass
+
+
+def test_perms():
+    """"""
+    pass
+
+
+#==================================================================================================
+@pytest.mark.parametrize(
+    ("pattern", "regex"),
+    [
+        (["year",], r"\d{4}"),
+        (["month",], r"\d{2}"),
+        (["day",], r"\d{2}"),
+        (["date",], r"\d{4}-\d{2}-\d{2}"),
+        (["date_time",], r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}"),
+    ]
+)
+def test_build_pattern_single(pattern, regex):
+    """"""
+    cfg = archiver.Settings()
+    cfg.path_pattern = pattern
+    cfg.build_storage_path()
+
+    assert re.match(regex, cfg.archive_path.parts[-1])
+
+
+def test_build_pattern_double():
+    """"""
+    cfg = archiver.Settings()
+    cfg.path_pattern = ["year", "month"]
+    cfg.build_storage_path()
+
+    assert re.match(r"\d{4}", cfg.archive_path.parts[-2])    
+    assert re.match(r"\d{2}", cfg.archive_path.parts[-1])
+
+
+def test_build_pattern_user():
+    """"""
+    cfg = archiver.Settings()
+    cfg.user_patterns = {"version": "v1.2.3"}
+    cfg.path_pattern = ["version",]
+
+    cfg.build_storage_path()
+
+    assert cfg.archive_path.parts[-1] == "v1.2.3"

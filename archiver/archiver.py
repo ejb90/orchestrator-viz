@@ -1,4 +1,6 @@
 """"""
+import argparse
+import datetime
 import grp
 import gzip
 import os
@@ -28,9 +30,49 @@ class Settings:
 
         ]
         self.exclude = []
+        self.search_root = pathlib.Path()
+
+        self.archive = False
+        self.compress = False
+        self.copy = False
+        self.move = False
+        self.owner = None
+        self.group = None
+        self.perms_file = None
+        self.perms_dir = None
+
+        self.archive_root = pathlib.Path()
+        self.archive_path = None
+        self.path_pattern = []
+        self._patterns = {}
+        self.user_patterns = {}
+    
+    def get_path_pattern(self):
+        """"""
+        datetime_obj = datetime.datetime.now()
+
+        self._patterns = {
+            "user": os.environ.get("USER"),
+            "year": datetime_obj.year,
+            "month": datetime_obj.year,
+            "day": datetime_obj.day,
+            "date": datetime_obj.date(),
+            "date_time": datetime_obj.isoformat(),
+            "model": None,
+            "step": None,
+        }
+        self._patterns.update(self.user_patterns)
+
+    def build_storage_path(self):
+        """""" 
+        self.get_path_pattern()
+
+        self.archive_path = self.archive_root
+        for part in self.path_pattern:
+            self.archive_path = self.archive_path / str(self._patterns.get(part, ""))
 
 
-def find_archive_fobjs(root, include, exclude=None):
+def find_storage_fobjs(root, include, exclude=None):
     """"""
     matches = [path for pattern in include for path in root.glob(pattern)]
     exclusions = [path for pattern in exclude for path in root.glob(pattern)] if exclude else []
@@ -98,14 +140,46 @@ def change_owner(fobj, owner):
     os.chown(fobj, uid, -1)
 
 
-def move_fobjs(fobjs, dest):
+def parse_args():
     """"""
-    shutil.copy2(fobjs, dest)
+    parser = argparse.ArgumentParser(description="Archiver CLI inputs")
+
+    parser.add_argument("--cfg", type=pathlib.Path, default=pathlib.Path("archive.yaml"), help="Configuration file path")
+    
+    return parser.parse_args()
 
 
-def build_archive_dir(root, pattern):
+def main():
     """"""
-    path = root
-    for part in pattern:
-        path = path / part
-    return path
+    cfg = Settings()
+    storage_objs = find_storage_fobjs(cfg.search_root)
+
+    if cfg.archive:
+        storage_objs = archive_fobjs(storage_objs, aname=cfg.search_root / pathlib.Path("archive.tar"), exist_ok=cfg.exist_ok, flatten=cfg.flatten, root=cfg.search_root)
+        storage_objs = [storage_objs,]
+    
+    if cfg.compress:
+        storage_objs = compress_fobjs(storage_objs)
+        # Todo - if archive == True, there is a temporary .tar file which needs to be removed here when the tar.gz is made
+    
+    if cfg.owner: 
+        for fobj in storage_objs:
+            change_owner(fobj)
+    if cfg.group:
+        for fobj in storage_objs:
+            change_group(fobj)
+    if cfg.perms_file:
+        for fobj in storage_objs:
+            if fobj.is_file():
+                change_perms(fobj, cfg.perms_file)
+    if cfg.perms_dir:
+        for fobj in storage_objs:
+            if fobj.is_dir():
+                change_perms(fobj, cfg.perms_dir)
+    
+    if cfg.copy:
+        for fobj in storage_objs:
+            shutil.copy2(fobj, cfg.archive_path / fobj.name)
+    if cfg.move:
+        for fobj in storage_objs:
+            fobj.rename(cfg.archive_path / fobj.name)
